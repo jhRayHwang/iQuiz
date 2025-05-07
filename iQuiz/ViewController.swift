@@ -7,7 +7,6 @@
 
 import UIKit
 
-// Simple model for a quiz topic
 struct Quiz {
   let iconName: String
   let title: String
@@ -41,7 +40,7 @@ class ViewController: UIViewController {
            title: "Science",
            description: "Explore biology, physics…")
     ]
-    
+
     tableView.reloadData()
   }
   
@@ -55,7 +54,7 @@ class ViewController: UIViewController {
   }
 }
 
-// MARK: – Table View Data Source
+
 extension ViewController: UITableViewDataSource {
   func tableView(_ tv: UITableView, numberOfRowsInSection section: Int) -> Int {
     quizzes.count
@@ -76,7 +75,7 @@ extension ViewController: UITableViewDataSource {
   }
 }
 
-// MARK: – Table View Delegate
+
 extension ViewController: UITableViewDelegate {
   func tableView(_ tv: UITableView, didSelectRowAt indexPath: IndexPath) {
     tv.deselectRow(at: indexPath, animated: true)
