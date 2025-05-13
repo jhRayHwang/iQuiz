@@ -80,7 +80,8 @@ struct ContentView: View {
         )
     ]
 
-    
+    @State private var showingSettings = false
+
     var body: some View {
         NavigationView {
             List(quizzes) { quiz in
@@ -102,6 +103,17 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("iQuiz")
+            .toolbar {
+                // settings button up top
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Settings") {
+                    showingSettings = true
+                    }
+                }
+            }
+            .alert("Settings go here", isPresented: $showingSettings) {
+                Button("OK", role: .cancel) { }
+            }
         }
     }
 }
