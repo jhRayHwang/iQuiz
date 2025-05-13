@@ -10,7 +10,6 @@ import SwiftUI
 struct QuizFlowView: View {
     let quiz: Quiz
     
-    // flow state
     @State private var currentQ = 0
     @State private var score = 0
     @State private var selected: Int? = nil
@@ -21,28 +20,32 @@ struct QuizFlowView: View {
     private var q: Question { quiz.questions[currentQ] }
     
     var body: some View {
-        Group {
-            if isFinished {
-                finishedScene
-            } else if showingAnswer {
-                answerScene
-            } else {
-                questionScene
+        VStack(spacing: 0) {
+            // MARK: Main Content
+            Group {
+                if isFinished {
+                    finishedScene
+                } else if showingAnswer {
+                    answerScene
+                } else {
+                    questionScene
+                }
             }
+            .padding()
+            .frame(maxHeight: .infinity)
+            
+            // MARK: Swipe Zone
+            swipeZone
         }
-        .navigationBarBackButtonHidden(true) // we provide our own
+        .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("Back") {
-                    // abandon entirely
                     presentationMode.wrappedValue.dismiss()
                 }
             }
         }
-        .gesture(dragGesture)           // extra-credit swipes
-        .overlay(discoverabilityHint)   // show hint text
         .animation(.easeInOut, value: currentQ)
-        .padding()
     }
     
     // MARK: Scenes
@@ -53,11 +56,10 @@ struct QuizFlowView: View {
                 .font(.title2)
                 .multilineTextAlignment(.center)
             
-            // options
             ForEach(q.options.indices, id: \.self) { idx in
-                Button(action: {
+                Button {
                     selected = idx
-                }) {
+                } label: {
                     HStack {
                         Text(q.options[idx])
                         Spacer()
@@ -84,16 +86,16 @@ struct QuizFlowView: View {
                 .font(.title2)
                 .multilineTextAlignment(.center)
             
+            if selected == q.correctIndex {
+                Text("Right!").foregroundColor(.green)
+            } else {
+                Text("Wrong").foregroundColor(.red)
+            }
+            
             Text("Correct answer:")
                 .font(.headline)
             Text(q.options[q.correctIndex])
                 .bold()
-            
-            if selected == q.correctIndex {
-                Text("🎉 Right!").foregroundColor(.green)
-            } else {
-                Text("❌ Wrong").foregroundColor(.red)
-            }
             
             Button("Next") {
                 goToNext()
@@ -107,7 +109,7 @@ struct QuizFlowView: View {
                 .font(.largeTitle)
             Text("You got \(score) of \(quiz.questions.count) correct.")
                 .font(.title3)
-            Button("Done") {
+            Button("Next") {
                 presentationMode.wrappedValue.dismiss()
             }
         }
@@ -139,39 +141,36 @@ struct QuizFlowView: View {
         showingAnswer = false
     }
     
-    // MARK: Swipe gesture
+    // MARK: Swipe Zone
     
-    private var dragGesture: some Gesture {
-        DragGesture(minimumDistance: 50, coordinateSpace: .local)
-            .onEnded { value in
-                if abs(value.translation.height) < abs(value.translation.width) {
-                    if value.translation.width > 0 {
-                        // swipe right
-                        if showingAnswer {
-                            goToNext()
-                        } else {
-                            if selected != nil {
+    private var swipeZone: some View {
+        Text("Swipe → to Submit/Next   |   ← to Abandon")
+            .font(.footnote)
+            .foregroundColor(.secondary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 80)
+            .padding(.vertical, 12)
+            .background(Color(.systemGray6))
+            .contentShape(Rectangle())  // make entire area tappable/swipeable
+            .padding(.bottom, 30)
+            .gesture(
+                DragGesture(minimumDistance: 50, coordinateSpace: .local)
+                    .onEnded { value in
+                        guard abs(value.translation.height) < abs(value.translation.width) else {
+                            return
+                        }
+                        if value.translation.width > 0 {
+                            // swipe right
+                            if showingAnswer {
+                                goToNext()
+                            } else if selected != nil {
                                 submitAnswer()
                             }
+                        } else {
+                            // swipe left → abandon
+                            presentationMode.wrappedValue.dismiss()
                         }
-                    } else {
-                        // swipe left → abandon quiz
-                        presentationMode.wrappedValue.dismiss()
                     }
-                }
-            }
-    }
-    
-    // MARK: Discoverability Hint
-    
-    private var discoverabilityHint: some View {
-        VStack {
-            Spacer()
-            Text("Swipe → to Submit/Next, ← to Abandon")
-                .font(.footnote)
-                .padding(.vertical, 4)
-                .frame(maxWidth: .infinity)
-                .background(Color(.systemGray6).opacity(0.9))
-        }
+            )
     }
 }
