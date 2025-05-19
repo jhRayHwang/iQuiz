@@ -50,9 +50,7 @@ class QuizStore: ObservableObject {
                     self.showNetworkError = true
                     return
                 }
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    print("🌐 RAW JSON:", jsonString)
-                }
+                
                 do {
                     // match JSON structure: [ { title, desc, questions: [ { text, answers, answer } ] } ]
                     let remote = try JSONDecoder().decode([RemoteQuiz].self, from: data)
