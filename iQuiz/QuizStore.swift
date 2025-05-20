@@ -109,11 +109,13 @@ private struct RemoteQuiz: Codable {
 private struct RemoteQuestion: Codable {
   let text: String
   let answers: [String]
-  let answer: String      // ← was Int
+  let answer: String      // still a String
 
-  // helper to get an Int index
+  /// Convert the JSON “answer” (1-based string) → a Swift 0-based Int index
   var answerIndex: Int {
-    Int(answer) ?? 0
+    let raw = Int(answer) ?? 1       // fallback to “1” if parse fails
+    return max(0, raw - 1)           // subtract 1 & clamp at 0
   }
 }
+
 
